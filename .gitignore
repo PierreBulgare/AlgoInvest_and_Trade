@@ -1,0 +1,6 @@
+# Exclusions des Fichiers CSV
+*.csv
+
+# Exclusion de dossiers
+__pycache__/
+env/
