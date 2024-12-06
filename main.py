@@ -1,6 +1,6 @@
 import time
-from algorythms.bruteforce import get_best_investment
-from algorythms.optimized import get_best_investment_optimized
+from algorithms.bruteforce import get_best_investment
+from algorithms.optimized import get_best_investment_optimized
 
 def main():
     file_path = "liste_actions.csv"
