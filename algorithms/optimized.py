@@ -63,7 +63,7 @@ def find_best_investment(data: pd.DataFrame) -> tuple:
 
     return pd.DataFrame(reversed(selected_actions)), total_profit, total_cost
 
-def get_best_investment_optimized(file_path: str, output_file: str):
+def get_best_investment(file_path: str, output_file: str):
     """
     Fonction principale
     """

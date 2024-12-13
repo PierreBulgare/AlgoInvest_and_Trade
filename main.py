@@ -1,6 +1,6 @@
 import time
-from algorithms.bruteforce import get_best_investment
-from algorithms.optimized import get_best_investment_optimized
+import algorithms.bruteforce as bruteforce_algo
+import algorithms.optimized as optimized_algo
 
 def main():
     file_path = "liste_actions.csv"
@@ -23,14 +23,14 @@ def main():
                         # Calcul du temps d'exécution de bruteforce.py
                         print("Exécution de bruteforce.py ...")
                         start_time = time.time()
-                        get_best_investment(file_path, output_file_path)
+                        bruteforce_algo.get_best_investment(file_path, output_file_path)
                         bruteforce_execution_duration = time.time() - start_time
                         print(f"Bruteforce : {bruteforce_execution_duration:.3f} secondes")
                     elif algo_choice == 2:
                         # Calcul du temps d'exécution de optimized.py
                         print("Exécution de optimized.py ...")
                         start_time = time.time()
-                        get_best_investment_optimized(file_path, output_file_path)
+                        optimized_algo.get_best_investment(file_path, output_file_path)
                         optimized_execution_duration = time.time() - start_time
                         print(f"Optimized : {optimized_execution_duration:.3f} secondes")
                     else:
