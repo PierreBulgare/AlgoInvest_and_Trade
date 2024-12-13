@@ -1,22 +1,5 @@
 from algorithms.common import *
 
-def get_actions_datas(actions_data: pd.DataFrame)-> pd.DataFrame:
-    """Récupère, convertit et retourne les données du CSV"""
-    # Vérification de la présence des colonnes requises
-    required_columns = ["Actions #", "Coût par action (en euros)", "Bénéfice (après 2 ans)"]
-    if not all(col in actions_data.columns for col in required_columns):
-        raise ValueError(f"Le fichier CSV doit contenir les colonnes suivantes : {required_columns}")
-    
-    # Conversion des données numériques en décimales
-    actions_data["Bénéfice (après 2 ans)"] = actions_data["Bénéfice (après 2 ans)"].str.rstrip("%").astype(float)
-    actions_data["Coût par action (en euros)"] = actions_data["Coût par action (en euros)"].astype(float)
-    
-    actions_data["Bénéfice (en euros)"] = actions_data.apply(
-        lambda x: get_profit(x["Coût par action (en euros)"], x["Bénéfice (après 2 ans)"]),
-        axis=1
-    )
-    return actions_data
-
 def find_best_investment(data: pd.DataFrame) -> tuple:
     """
     Retourne la meilleure combinaison d'investissement
@@ -26,7 +9,6 @@ def find_best_investment(data: pd.DataFrame) -> tuple:
         - Impossible d'acheter une fraction d'action
         - Budget maximum de 500 €
     """
-
     # Extraction des colonnes coûts et bénéfices en liste
     action_costs = data["Coût par action (en euros)"].tolist()
     action_profits = data["Bénéfice (en euros)"].tolist()
@@ -62,18 +44,3 @@ def find_best_investment(data: pd.DataFrame) -> tuple:
     total_profit = round(dp_table[total_actions][MAX_BUDGET], 2)
 
     return pd.DataFrame(reversed(selected_actions)), total_profit, total_cost
-
-def get_best_investment(file_path: str, output_file: str):
-    """
-    Fonction principale
-    """
-    # Récupère les données du CSV
-    csv_datas = get_csv_datas(file_path)
-
-    if csv_datas is not None:
-        # Récupère les données des actions
-        actions_datas = get_actions_datas(csv_datas)
-        # Récupère la meilleure combinaison d'investissement
-        best_combination, best_profit, best_cost = find_best_investment(actions_datas)
-        # Sauvegarde la combinaison dans un fichier CSV
-        save_best_investment(best_combination, best_profit, best_cost, actions_datas, output_file)

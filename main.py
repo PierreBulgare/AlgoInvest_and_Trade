@@ -1,10 +1,12 @@
 import time
 import algorithms.bruteforce as bruteforce_algo
 import algorithms.optimized as optimized_algo
+from algorithms.common import get_best_investment
 
 def main():
     file_path = "liste_actions.csv"
-    output_file_path = "datas/meilleur_combinaison.csv"
+    output_file_path_bruteforce = "datas/best_combinaison_bruteforce.csv"
+    output_file_path_optimized = "datas/best_combinaison_optimized.csv"
 
     while True:
         algo_choice = input(
@@ -23,16 +25,16 @@ def main():
                         # Calcul du temps d'exécution de bruteforce.py
                         print("Exécution de bruteforce.py ...")
                         start_time = time.time()
-                        bruteforce_algo.get_best_investment(file_path, output_file_path)
+                        get_best_investment(file_path, output_file_path_bruteforce, bruteforce_algo.find_best_investment)
                         bruteforce_execution_duration = time.time() - start_time
-                        print(f"Bruteforce : {bruteforce_execution_duration:.3f} secondes")
+                        print(f"Bruteforce Algorithm Duration : {bruteforce_execution_duration:.3f} secondes")
                     elif algo_choice == 2:
                         # Calcul du temps d'exécution de optimized.py
                         print("Exécution de optimized.py ...")
                         start_time = time.time()
-                        optimized_algo.get_best_investment(file_path, output_file_path)
+                        get_best_investment(file_path, output_file_path_optimized, optimized_algo.find_best_investment)
                         optimized_execution_duration = time.time() - start_time
-                        print(f"Optimized : {optimized_execution_duration:.3f} secondes")
+                        print(f"Optimized Algorithm Duration : {optimized_execution_duration:.3f} secondes")
                     else:
                         break
             else:

@@ -1,6 +1,4 @@
 # Exclusion de dossiers
 __pycache__/
 env/
-
-# Exclusion de fichiers
-*.csv
+datas/
