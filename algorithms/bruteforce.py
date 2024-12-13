@@ -16,7 +16,7 @@ def find_best_investment(data: pd.DataFrame)-> tuple:
 
     for r in range(1, len(data) + 1):
         for combination in combinations(data.itertuples(index=False), r):
-            total_cost = sum(action[1] for action in combination)
+            total_cost = sum(action[1] for action in combination if action)
             total_profit = sum(action[3] for action in combination)
             
             if total_cost <= MAX_BUDGET and total_profit > best_profit:

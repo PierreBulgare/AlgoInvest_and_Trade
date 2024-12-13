@@ -10,7 +10,7 @@ def find_best_investment(data: pd.DataFrame) -> tuple:
         - Budget maximum de 500 €
     """
     # Extraction des colonnes coûts et bénéfices en liste
-    action_costs = data["Coût par action (en euros)"].tolist()
+    action_costs = [cost for cost in data["Coût par action (en euros)"].tolist() if cost > 0]
     action_profits = data["Bénéfice (en euros)"].tolist()
     total_actions = len(action_costs)
 
@@ -25,7 +25,8 @@ def find_best_investment(data: pd.DataFrame) -> tuple:
             
             if action_cost <= current_budget:
                 dp_table[action_index][current_budget] = max(
-                    action_profit + dp_table[action_index - 1][int(current_budget - action_cost)],
+                    action_profit + dp_table[action_index - 1][int(current_budget - action_cost)] 
+                    if current_budget >= action_cost else 0,
                     dp_table[action_index - 1][current_budget],
                 )
             else:

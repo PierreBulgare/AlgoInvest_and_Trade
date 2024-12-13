@@ -4,7 +4,7 @@ import algorithms.optimized as optimized_algo
 from algorithms.common import get_best_investment
 
 def main():
-    file_path = "liste_actions.csv"
+    file_path = "dataset1.csv"
     output_file_path_bruteforce = "datas/best_combinaison_bruteforce.csv"
     output_file_path_optimized = "datas/best_combinaison_optimized.csv"
 
