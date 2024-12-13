@@ -1,19 +1,6 @@
-import pandas as pd
+from algorithms.common import *
 
-def get_profit(action_cost, percentage):
-    """Calcule le bénéfice en euros (en 2 ans)"""
-    return round(action_cost * (percentage / 100) * 2, 2)
-
-def get_csv_datas(file_path):
-    """Récupère les données du CSV"""
-    try:
-        return pd.read_csv(file_path)
-    except FileNotFoundError:
-        print(f"Erreur : Le fichier {file_path} est introuvable.")
-    except pd.errors.EmptyDataError:
-        raise ValueError("Erreur : Le fichier est vide.")
-
-def get_actions_datas(actions_data):
+def get_actions_datas(actions_data: pd.DataFrame)-> pd.DataFrame:
     """Récupère, convertit et retourne les données du CSV"""
     # Vérification de la présence des colonnes requises
     required_columns = ["Actions #", "Coût par action (en euros)", "Bénéfice (après 2 ans)"]
@@ -30,47 +17,63 @@ def get_actions_datas(actions_data):
     )
     return actions_data
 
-def find_best_investment(data, budget=500):
+def find_best_investment(data: pd.DataFrame) -> tuple:
     """
-    Retourne la meilleure combinaison de manière optimisée
+    Retourne la meilleure combinaison d'investissement
+
+    Contraintes:
+        - Chaque action ne peut être achetée qu'une seule fois
+        - Impossible d'acheter une fraction d'action
+        - Budget maximum de 500 €
     """
-    # Conversion des données en listes
-    costs = data["Coût par action (en euros)"].tolist()
-    profits = data["Bénéfice (en euros)"].tolist()
-    n = len(costs)
 
-    # Création d'une liste pour stocker les valeurs maximales
-    max_values = [0] * (budget + 1)
-    item_selection = [None] * (budget + 1)
+    # Extraction des colonnes coûts et bénéfices en liste
+    action_costs = data["Coût par action (en euros)"].tolist()
+    action_profits = data["Bénéfice (en euros)"].tolist()
+    total_actions = len(action_costs)
 
-    for i in range(n):
-        for j in range(budget, int(costs[i]) - 1, -1):
-            if max_values[j - int(costs[i])] + profits[i] > max_values[j]:
-                max_values[j] = max_values[j - int(costs[i])] + profits[i]
-                item_selection[j] = i
+    # Tableau de Programmation Dynamique pour stocker les bénéfices maximaux
+    dp_table = [[0] * (MAX_BUDGET + 1) for _ in range(total_actions + 1)]
 
-    # Création de la liste de la meilleur combinaison d'investissement
-    best_combination = []
-    # Stockage du budget de départ dans une nouvelle variable modifiable
-    current_fund = budget
-    while current_fund > 0 and item_selection[current_fund] is not None:
-        i = item_selection[current_fund]
-        best_combination.append(data.iloc[i])
-        current_fund -= int(costs[i])
+    # Mise à jour du Tableau de Programmation Dynamique
+    for action_index in range(1, total_actions + 1):
+        for current_budget in range(MAX_BUDGET + 1):
+            action_cost = action_costs[action_index - 1]
+            action_profit = action_profits[action_index - 1]
+            
+            if action_cost <= current_budget:
+                dp_table[action_index][current_budget] = max(
+                    action_profit + dp_table[action_index - 1][int(current_budget - action_cost)],
+                    dp_table[action_index - 1][current_budget],
+                )
+            else:
+                dp_table[action_index][current_budget] = dp_table[action_index - 1][current_budget]
 
-    total_profit = round(max_values[budget], 2)
-    
-    return pd.DataFrame(best_combination), total_profit
+    # Récupération des actions sélectionnées
+    selected_actions = []
+    remaining_budget = MAX_BUDGET
+    for action_index in range(total_actions, 0, -1):
+        if dp_table[action_index][remaining_budget] != dp_table[action_index - 1][remaining_budget]:
+            selected_actions.append(data.iloc[action_index - 1])
+            remaining_budget -= int(action_costs[action_index - 1])
 
-def save_best_investment(best_combination, best_profit, output_file):
-    """Sauvegarde la meilleure combinaison dans un fichier CSV"""
-    best_combination['Total Bénéfice'] = best_profit
-    best_combination.to_csv(output_file, index=False)
+    # Calcul des coûts et bénéfices
+    total_cost = sum(action["Coût par action (en euros)"] for action in selected_actions)
+    total_profit = round(dp_table[total_actions][MAX_BUDGET], 2)
 
-def get_best_investment_optimized(file_path, output_file, budget=500):
-    """Fonction principale"""
+    return pd.DataFrame(reversed(selected_actions)), total_profit, total_cost
+
+def get_best_investment_optimized(file_path: str, output_file: str):
+    """
+    Fonction principale
+    """
+    # Récupère les données du CSV
     csv_datas = get_csv_datas(file_path)
+
     if csv_datas is not None:
+        # Récupère les données des actions
         actions_datas = get_actions_datas(csv_datas)
-        best_combination, best_profit = find_best_investment(actions_datas, budget)
-        save_best_investment(best_combination, best_profit, output_file)
+        # Récupère la meilleure combinaison d'investissement
+        best_combination, best_profit, best_cost = find_best_investment(actions_datas)
+        # Sauvegarde la combinaison dans un fichier CSV
+        save_best_investment(best_combination, best_profit, best_cost, actions_datas, output_file)
