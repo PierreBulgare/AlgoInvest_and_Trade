@@ -10,7 +10,7 @@ def find_best_investment(data: pd.DataFrame) -> tuple:
         - Budget maximum de 500 €
     """
     # Extraction des colonnes coûts et bénéfices en liste
-    action_costs = [cost for cost in data["Coût par action (en euros)"].tolist() if cost > 0]
+    action_costs = data["Coût par action (en euros)"].tolist()
     action_profits = data["Bénéfice (en euros)"].tolist()
     total_actions = len(action_costs)
 
@@ -25,23 +25,25 @@ def find_best_investment(data: pd.DataFrame) -> tuple:
             
             if action_cost <= current_budget:
                 dp_table[action_index][current_budget] = max(
-                    action_profit + dp_table[action_index - 1][int(current_budget - action_cost)] 
-                    if current_budget >= action_cost else 0,
-                    dp_table[action_index - 1][current_budget],
+                    action_profit + dp_table[action_index - 1][int(current_budget - action_cost)],
+                    dp_table[action_index - 1][current_budget]
                 )
             else:
                 dp_table[action_index][current_budget] = dp_table[action_index - 1][current_budget]
 
     # Récupération des actions sélectionnées
-    selected_actions = []
+    selected_indices = []
     remaining_budget = MAX_BUDGET
     for action_index in range(total_actions, 0, -1):
         if dp_table[action_index][remaining_budget] != dp_table[action_index - 1][remaining_budget]:
-            selected_actions.append(data.iloc[action_index - 1])
-            remaining_budget -= int(action_costs[action_index - 1])
+            selected_indices.append(action_index - 1)
+            remaining_budget -= round(action_costs[action_index - 1])
+
+    # Construction du DataFrame final des actions sélectionnées
+    selected_df = data.iloc[selected_indices].reset_index(drop=True)
 
     # Calcul des coûts et bénéfices
-    total_cost = sum(action["Coût par action (en euros)"] for action in selected_actions)
+    total_cost = selected_df["Coût par action (en euros)"].sum()
     total_profit = round(dp_table[total_actions][MAX_BUDGET], 2)
 
-    return pd.DataFrame(reversed(selected_actions)), total_profit, total_cost
+    return selected_df, total_profit, total_cost
